@@ -1,0 +1,509 @@
+{
+  "_type": "export",
+  "exportFormat": 4,
+  "exportDate": "2025-11-15T10:30:00.000Z",
+  "resources": [
+    {
+      "_id": "wrk_agri360",
+      "_type": "workspace",
+      "name": "Agri360 Backend API",
+      "description": "Complete API testing for Agri360 with Arabic localization and crop prices",
+      "scope": "collection"
+    },
+    {
+      "_id": "env_local",
+      "_type": "environment",
+      "parentId": "wrk_agri360",
+      "name": "Local Development",
+      "data": {
+        "baseUrl": "http://localhost:3000",
+        "apiBase": "http://localhost:3000",
+        "token": "your_jwt_token_here",
+        "farmerId": "farmer_id_here",
+        "farmerEmail": "ahmed@farm.com",
+        "farmerPassword": "password123"
+      }
+    },
+    {
+      "_id": "req_register_farmer",
+      "_type": "request",
+      "parentId": "fld_auth",
+      "name": "Register New Farmer",
+      "method": "POST",
+      "url": "{{ baseUrl }}/auth/register",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"name\": \"Ahmed Hassan\",\n  \"email\": \"ahmed@farm.com\",\n  \"password\": \"password123\",\n  \"role\": \"farmer\",\n  \"country\": \"Egypt\",\n  \"governorate\": \"Giza\",\n  \"lang\": \"ar-EG\"\n}"
+      }
+    },
+    {
+      "_id": "req_login",
+      "_type": "request",
+      "parentId": "fld_auth",
+      "name": "Login",
+      "method": "POST",
+      "url": "{{ baseUrl }}/auth/login",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"email\": \"ahmed@farm.com\",\n  \"password\": \"password123\"\n}"
+      }
+    },
+    {
+      "_id": "req_get_me",
+      "_type": "request",
+      "parentId": "fld_auth",
+      "name": "Get Current User",
+      "method": "GET",
+      "url": "{{ baseUrl }}/auth/me",
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ token }}"
+        }
+      ]
+    },
+    {
+      "_id": "req_dashboard_english",
+      "_type": "request",
+      "parentId": "fld_dashboard",
+      "name": "Dashboard Stats (English)",
+      "method": "GET",
+      "url": "{{ baseUrl }}/dashboard/stats?lang=en",
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ token }}"
+        },
+        {
+          "name": "Accept-Language",
+          "value": "en"
+        }
+      ]
+    },
+    {
+      "_id": "req_dashboard_arabic_eg",
+      "_type": "request",
+      "parentId": "fld_dashboard",
+      "name": "Dashboard Stats (Arabic Egyptian)",
+      "method": "GET",
+      "url": "{{ baseUrl }}/dashboard/stats?lang=ar-EG",
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ token }}"
+        },
+        {
+          "name": "Accept-Language",
+          "value": "ar-EG"
+        }
+      ]
+    },
+    {
+      "_id": "req_dashboard_arabic_sa",
+      "_type": "request",
+      "parentId": "fld_dashboard",
+      "name": "Dashboard Stats (Arabic Saudi)",
+      "method": "GET",
+      "url": "{{ baseUrl }}/dashboard/stats?lang=ar-SA",
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ token }}"
+        },
+        {
+          "name": "Accept-Language",
+          "value": "ar-SA"
+        }
+      ]
+    },
+    {
+      "_id": "req_dashboard_crop_prices",
+      "_type": "request",
+      "parentId": "fld_dashboard",
+      "name": "Dashboard - View Crop Prices",
+      "method": "GET",
+      "url": "{{ baseUrl }}/dashboard/stats",
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ token }}"
+        }
+      ],
+      "description": "View current market prices from Mahsoly for all crops"
+    },
+    {
+      "_id": "req_marketplace_list_english",
+      "_type": "request",
+      "parentId": "fld_marketplace",
+      "name": "List Marketplace Listings (English)",
+      "method": "GET",
+      "url": "{{ baseUrl }}/marketplace/listings?lang=en",
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ token }}"
+        },
+        {
+          "name": "Accept-Language",
+          "value": "en"
+        }
+      ]
+    },
+    {
+      "_id": "req_marketplace_list_arabic",
+      "_type": "request",
+      "parentId": "fld_marketplace",
+      "name": "List Marketplace Listings (Arabic - EG)",
+      "method": "GET",
+      "url": "{{ baseUrl }}/marketplace/listings?lang=ar-EG",
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ token }}"
+        },
+        {
+          "name": "Accept-Language",
+          "value": "ar-EG"
+        }
+      ]
+    },
+    {
+      "_id": "req_marketplace_list_prices",
+      "_type": "request",
+      "parentId": "fld_marketplace",
+      "name": "List Marketplace - With Mahsoly Prices",
+      "method": "GET",
+      "url": "{{ baseUrl }}/marketplace/listings",
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ token }}"
+        }
+      ],
+      "description": "View all marketplace listings with current Mahsoly market prices and price comparisons"
+    },
+    {
+      "_id": "req_marketplace_create_english",
+      "_type": "request",
+      "parentId": "fld_marketplace",
+      "name": "Create Listing (English)",
+      "method": "POST",
+      "url": "{{ baseUrl }}/marketplace/listings?lang=en",
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ token }}"
+        },
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"title\": \"Premium Wheat\",\n  \"description\": \"High quality wheat from Nile Delta\",\n  \"crop\": \"Wheat\",\n  \"quantity\": 500,\n  \"unit\": \"kg\",\n  \"pricePerUnit\": 450,\n  \"location\": \"Dakahlia, Egypt\"\n}"
+      }
+    },
+    {
+      "_id": "req_marketplace_create_arabic",
+      "_type": "request",
+      "parentId": "fld_marketplace",
+      "name": "Create Listing (Arabic - EG)",
+      "method": "POST",
+      "url": "{{ baseUrl }}/marketplace/listings?lang=ar-EG",
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ token }}"
+        },
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"title\": \"أرز عالي الجودة\",\n  \"description\": \"أرز بلاسماتي من منطقة الدلتا\",\n  \"crop\": \"Rice\",\n  \"quantity\": 300,\n  \"unit\": \"kg\",\n  \"pricePerUnit\": 680,\n  \"location\": \"Sharqia, Egypt\"\n}"
+      }
+    },
+    {
+      "_id": "req_farm_create_english",
+      "_type": "request",
+      "parentId": "fld_farm",
+      "name": "Create Farm (English)",
+      "method": "POST",
+      "url": "{{ baseUrl }}/farm",
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ token }}"
+        },
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"name\": \"Ahmed's Farm\",\n  \"location\": \"Giza, Egypt\",\n  \"area\": 50,\n  \"crops\": [\"Wheat\", \"Rice\", \"Corn\"]\n}"
+      }
+    },
+    {
+      "_id": "req_farm_create_arabic",
+      "_type": "request",
+      "parentId": "fld_farm",
+      "name": "Create Farm (Arabic - EG)",
+      "method": "POST",
+      "url": "{{ baseUrl }}/farm?lang=ar-EG",
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ token }}"
+        },
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"name\": \"مزرعة أحمد\",\n  \"location\": \"الجيزة، مصر\",\n  \"area\": 50,\n  \"crops\": [\"القمح\", \"الأرز\", \"الذرة\"]\n}"
+      }
+    },
+    {
+      "_id": "req_farm_list_english",
+      "_type": "request",
+      "parentId": "fld_farm",
+      "name": "List Farms (English)",
+      "method": "GET",
+      "url": "{{ baseUrl }}/farm?lang=en",
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ token }}"
+        }
+      ]
+    },
+    {
+      "_id": "req_farm_list_arabic",
+      "_type": "request",
+      "parentId": "fld_farm",
+      "name": "List Farms (Arabic - EG)",
+      "method": "GET",
+      "url": "{{ baseUrl }}/farm?lang=ar-EG",
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ token }}"
+        }
+      ]
+    },
+    {
+      "_id": "req_business_plan_english",
+      "_type": "request",
+      "parentId": "fld_business_plan",
+      "name": "Generate Business Plan (English)",
+      "method": "POST",
+      "url": "{{ baseUrl }}/businessPlan/generate",
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ token }}"
+        },
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"crop\": \"Wheat\",\n  \"area\": 50,\n  \"region\": \"Giza\",\n  \"lang\": \"en\"\n}"
+      }
+    },
+    {
+      "_id": "req_business_plan_arabic",
+      "_type": "request",
+      "parentId": "fld_business_plan",
+      "name": "Generate Business Plan (Arabic - EG)",
+      "method": "POST",
+      "url": "{{ baseUrl }}/businessPlan/generate",
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ token }}"
+        },
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"crop\": \"القمح\",\n  \"area\": 50,\n  \"region\": \"الجيزة\",\n  \"lang\": \"ar-EG\"\n}"
+      }
+    },
+    {
+      "_id": "req_harvest_plan_english",
+      "_type": "request",
+      "parentId": "fld_harvest_plan",
+      "name": "Create Harvest Plan (English)",
+      "method": "POST",
+      "url": "{{ baseUrl }}/harvestPlan",
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ token }}"
+        },
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"crop\": \"Wheat\",\n  \"plantingDate\": \"2025-10-01\",\n  \"expectedHarvestDate\": \"2026-05-01\",\n  \"expectedYield\": 2500\n}"
+      }
+    },
+    {
+      "_id": "req_harvest_plan_arabic",
+      "_type": "request",
+      "parentId": "fld_harvest_plan",
+      "name": "Create Harvest Plan (Arabic - EG)",
+      "method": "POST",
+      "url": "{{ baseUrl }}/harvestPlan?lang=ar-EG",
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ token }}"
+        },
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"crop\": \"القمح\",\n  \"plantingDate\": \"2025-10-01\",\n  \"expectedHarvestDate\": \"2026-05-01\",\n  \"expectedYield\": 2500\n}"
+      }
+    },
+    {
+      "_id": "req_ai_chat_planning",
+      "_type": "request",
+      "parentId": "fld_ai",
+      "name": "AI Chat - Crop Planning (Arabic)",
+      "method": "POST",
+      "url": "{{ baseUrl }}/chat",
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ token }}"
+        },
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"mode\": \"planning\",\n  \"message\": \"كيف أزرع القمح بكفاءة\",\n  \"lang\": \"ar-EG\"\n}"
+      }
+    },
+    {
+      "_id": "req_ai_chat_general",
+      "_type": "request",
+      "parentId": "fld_ai",
+      "name": "AI Chat - General (Arabic)",
+      "method": "POST",
+      "url": "{{ baseUrl }}/chat",
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ token }}"
+        },
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"mode\": \"chat\",\n  \"message\": \"ما هي أفضل أوقات الزراعة؟\",\n  \"lang\": \"ar-EG\"\n}"
+      }
+    },
+    {
+      "_id": "req_weather_forecast",
+      "_type": "request",
+      "parentId": "fld_farm",
+      "name": "Get Weather Forecast (Arabic)",
+      "method": "GET",
+      "url": "{{ baseUrl }}/farm/weather?lang=ar-EG&region=Giza",
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ token }}"
+        }
+      ]
+    },
+    {
+      "_id": "fld_auth",
+      "_type": "request_group",
+      "parentId": "wrk_agri360",
+      "name": "🔐 Authentication",
+      "description": "User registration and login endpoints"
+    },
+    {
+      "_id": "fld_dashboard",
+      "_type": "request_group",
+      "parentId": "wrk_agri360",
+      "name": "📊 Dashboard",
+      "description": "Dashboard endpoints with crop prices and statistics"
+    },
+    {
+      "_id": "fld_marketplace",
+      "_type": "request_group",
+      "parentId": "wrk_agri360",
+      "name": "🏪 Marketplace",
+      "description": "Marketplace listing endpoints with Mahsoly price integration"
+    },
+    {
+      "_id": "fld_farm",
+      "_type": "request_group",
+      "parentId": "wrk_agri360",
+      "name": "🌾 Farm Management",
+      "description": "Farm management and weather endpoints"
+    },
+    {
+      "_id": "fld_business_plan",
+      "_type": "request_group",
+      "parentId": "wrk_agri360",
+      "name": "📋 Business Plan",
+      "description": "AI-powered business plan generation"
+    },
+    {
+      "_id": "fld_harvest_plan",
+      "_type": "request_group",
+      "parentId": "wrk_agri360",
+      "name": "🌱 Harvest Planning",
+      "description": "Harvest plan creation and management"
+    },
+    {
+      "_id": "fld_ai",
+      "_type": "request_group",
+      "parentId": "wrk_agri360",
+      "name": "🤖 AI Services",
+      "description": "AI chat and planning services with Arabic support"
+    }
+  ]
+}

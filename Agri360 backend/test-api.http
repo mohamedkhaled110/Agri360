@@ -1,0 +1,327 @@
+@baseUrl = http://localhost:5000/api
+@server = http://localhost:5000
+@token = 
+
+### ================================================================
+### 🌍 LANGUAGE SUPPORT (ARABIC)
+### ================================================================
+### To get Arabic responses, use ONE of these options:
+
+### Option 1: Query Parameter
+### GET http://localhost:5000/api/auth/me?lang=ar
+### Authorization: Bearer {{token}}
+
+### Option 2: Accept-Language Header
+### GET http://localhost:5000/api/auth/me
+### Authorization: Bearer {{token}}
+### Accept-Language: ar
+
+### Option 3: Save language on registration
+### POST http://localhost:5000/api/auth/register
+### Include "lang": "ar" in the request body
+
+### ================================================================
+### 🔐 AUTHENTICATION ENDPOINTS
+### ================================================================
+
+### 1️⃣ REGISTER NEW USER (English)
+# Save the token from response and set @token = TOKEN_VALUE above
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "name": "Ahmed Farmer",
+  "email": "ahmed@farm.com",
+  "password": "password123",
+  "role": "farmer",
+  "country": "Egypt",
+  "governorate": "Giza"
+}
+
+### 1️⃣ REGISTER NEW USER (Arabic) - Add ?lang=ar
+POST {{baseUrl}}/auth/register?lang=ar
+Content-Type: application/json
+
+{
+  "name": "أحمد المزارع",
+  "email": "ahmed_ar@farm.com",
+  "password": "password123",
+  "role": "farmer",
+  "country": "مصر",
+  "governorate": "الجيزة",
+  "lang": "ar"
+}
+
+### 2️⃣ LOGIN (English)
+# Use existing email and password
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "ahmed@farm.com",
+  "password": "password123"
+}
+
+### 2️⃣ LOGIN (Arabic) - Add ?lang=ar
+POST {{baseUrl}}/auth/login?lang=ar
+Content-Type: application/json
+
+{
+  "email": "ahmed_ar@farm.com",
+  "password": "password123"
+}
+
+### 3️⃣ GET CURRENT USER (with Arabic header)
+GET {{baseUrl}}/auth/me
+Authorization: Bearer {{token}}
+Accept-Language: ar
+
+### ================================================================
+### 🌾 BUSINESS PLANS (WITH MAHSOLY DATA) ⭐
+### ================================================================
+
+### 4️⃣ CREATE BUSINESS PLAN ⭐ (MAHSOLY MARKET DATA INCLUDED)
+# This endpoint uses Mahsoly API to get:
+# - Stock market prices (/stockmarket)
+# - Crop items (/item/all)
+# - Farm types (/farm/all)
+# Check response for "mahsolyData" section
+POST {{baseUrl}}/business
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "farm": {
+    "_id": "farm_123",
+    "farmName": "Green Valley Farm",
+    "fieldSizeHectares": 5,
+    "location": {
+      "lat": 30.0444,
+      "lon": 31.2357
+    },
+    "owner": "user_id_here",
+    "soilType": "clay",
+    "waterSource": "irrigation"
+  },
+  "crop": "wheat",
+  "cropCode": 56,
+  "investmentCost": 5000,
+  "duration": 120,
+  "expectedYield": 15
+}
+
+### 5️⃣ LIST ALL BUSINESS PLANS
+GET {{baseUrl}}/business
+Authorization: Bearer {{token}}
+
+### 6️⃣ GET BUSINESS PLAN BY ID
+# Replace 507f1f77bcf86cd799439011 with actual plan ID from create/list response
+GET {{baseUrl}}/business/507f1f77bcf86cd799439011
+Authorization: Bearer {{token}}
+
+### 7️⃣ UPDATE BUSINESS PLAN
+# Replace 507f1f77bcf86cd799439011 with actual plan ID
+PUT {{baseUrl}}/business/507f1f77bcf86cd799439011
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "investmentCost": 6000,
+  "expectedYield": 16,
+  "status": "approved"
+}
+
+### 8️⃣ DELETE BUSINESS PLAN
+# Replace 507f1f77bcf86cd799439011 with actual plan ID
+DELETE {{baseUrl}}/business/507f1f77bcf86cd799439011
+Authorization: Bearer {{token}}
+
+### ================================================================
+### 📊 DASHBOARD (WITH MAHSOLY DATA) ⭐
+### ================================================================
+
+### 9️⃣ GET DASHBOARD STATS
+GET {{baseUrl}}/dashboard
+Authorization: Bearer {{token}}
+
+### 🔟 COMPUTE DASHBOARD STATS ⭐ (MAHSOLY MARKET DATA INCLUDED)
+# This endpoint calls Mahsoly API in real-time to get:
+# - Stock market prices
+# - Crop items
+# - Farm types
+# Check response for "cropPriceTrends" section with Mahsoly data
+POST {{baseUrl}}/dashboard/compute
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "crop": "wheat",
+  "farm": {
+    "_id": "farm_123",
+    "farmName": "Green Valley Farm",
+    "fieldSizeHectares": 5,
+    "location": {
+      "lat": 30.0444,
+      "lon": 31.2357
+    },
+    "soilType": "clay",
+    "waterSource": "irrigation"
+  }
+}
+
+### ================================================================
+### 🌾 HARVEST PLANS
+### ================================================================
+
+### 1️⃣1️⃣ CREATE HARVEST PLAN
+POST {{baseUrl}}/harvest
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "crop": "wheat",
+  "farm": "farm_123",
+  "plantingDate": "2025-10-01",
+  "expectedHarvestDate": "2026-01-30",
+  "estimatedYield": 15,
+  "harvestMethod": "mechanical"
+}
+
+### 1️⃣2️⃣ LIST HARVEST PLANS
+GET {{baseUrl}}/harvest
+Authorization: Bearer {{token}}
+
+### ================================================================
+### 🏪 MARKETPLACE
+### ================================================================
+
+### 1️⃣3️⃣ CREATE MARKETPLACE LISTING
+POST {{baseUrl}}/marketplace
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "crop": "wheat",
+  "quantity": 100,
+  "unit": "kg",
+  "pricePerUnit": 250,
+  "currency": "EGP",
+  "harvestDate": "2025-11-15",
+  "description": "High quality wheat from Green Valley Farm"
+}
+
+### 1️⃣4️⃣ LIST MARKETPLACE
+GET {{baseUrl}}/marketplace
+Authorization: Bearer {{token}}
+
+### ================================================================
+### 🔧 FARMS
+### ================================================================
+
+### 1️⃣5️⃣ CREATE FARM
+POST {{baseUrl}}/farms
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "farmName": "Green Valley Farm",
+  "fieldSizeHectares": 5,
+  "location": {
+    "lat": 30.0444,
+    "lon": 31.2357,
+    "address": "Giza, Egypt"
+  },
+  "soilType": "clay",
+  "waterSource": "irrigation",
+  "crops": ["wheat", "corn"]
+}
+
+### 1️⃣6️⃣ LIST FARMS
+GET {{baseUrl}}/farms
+Authorization: Bearer {{token}}
+
+### 1️⃣7️⃣ GET FARM BY ID
+GET {{baseUrl}}/farms/farm_123
+Authorization: Bearer {{token}}
+
+### ================================================================
+### 🧪 MAHSOLY API FEATURE TESTS
+### ================================================================
+
+### TEST 1: Check Business Plan with Mahsoly Data
+# After running "CREATE BUSINESS PLAN", look for:
+# - mahsolyData.marketData (stock prices)
+# - mahsolyData.itemsData (crop items)
+# - mahsolyData.farmsData (farm types)
+# - aiGeneratedPlan with market-based pricing
+# This tests: /stockmarket, /item/all, /farm/all endpoints
+POST {{baseUrl}}/business
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "farm": {
+    "_id": "test_farm",
+    "farmName": "Test Farm",
+    "fieldSizeHectares": 10,
+    "location": {"lat": 30, "lon": 31},
+    "soilType": "loam",
+    "waterSource": "well"
+  },
+  "crop": "corn",
+  "cropCode": 27,
+  "investmentCost": 10000,
+  "duration": 100,
+  "expectedYield": 20
+}
+
+### TEST 2: Check Dashboard with Mahsoly Market Trends
+# After running "COMPUTE DASHBOARD STATS", look for:
+# - cropPriceTrends with mahsolyData
+# - Current market prices from /stockmarket
+# - Available items from /item/all
+# - Available farms from /farm/all
+POST {{baseUrl}}/dashboard/compute
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "crop": "corn",
+  "farm": {
+    "_id": "test_farm",
+    "farmName": "Test Farm",
+    "fieldSizeHectares": 10,
+    "location": {"lat": 30, "lon": 31},
+    "soilType": "loam",
+    "waterSource": "well"
+  }
+}
+
+### ================================================================
+### 📋 NOTES FOR TESTING
+### ================================================================
+# 
+# SETUP:
+# 1. Make sure server is running: npm run dev
+# 2. Should see: ✅ Server running on port 5000
+# 3. Should see: ✅ Connected to MongoDB
+#
+# WORKFLOW:
+# Step 1: Run "REGISTER NEW USER" or "LOGIN"
+# Step 2: Copy token from response
+# Step 3: Paste token after "@token = " at top of file
+# Step 4: Run any endpoint (they'll use the @token and @baseUrl)
+#
+# MAHSOLY TESTING:
+# Run "CREATE BUSINESS PLAN" → Check response for "mahsolyData"
+# Run "COMPUTE DASHBOARD" → Check response for "cropPriceTrends"
+# Both show real Egyptian market prices from Mahsoly API
+#
+# HOW TO RUN IN VS CODE:
+# 1. Click on any line of a request
+# 2. Click "Send Request" button that appears
+# 3. Response will show in right panel
+#
+# KEYBOARD SHORTCUT:
+# Click request line → Ctrl+Alt+R (or right-click → Send Request)
+#

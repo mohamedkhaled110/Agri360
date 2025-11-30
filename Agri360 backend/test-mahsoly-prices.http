@@ -1,0 +1,88 @@
+### Agri360 - Mahsoly Crop Prices Integration
+### Testing crop prices in Dashboard and Marketplace
+
+@baseUrl = http://localhost:3000
+@token = your_jwt_token_here
+
+### 1. Get Dashboard with Mahsoly Crop Prices (English)
+GET {{baseUrl}}/dashboard/stats
+Authorization: Bearer {{token}}
+Accept-Language: en
+
+### 2. Get Dashboard with Crop Prices (Arabic - Egyptian)
+GET {{baseUrl}}/dashboard/stats?lang=ar
+Authorization: Bearer {{token}}
+Accept-Language: ar-EG
+
+### 3. Get Dashboard with Crop Prices (Arabic - Saudi)
+GET {{baseUrl}}/dashboard/stats?lang=ar-SA
+Authorization: Bearer {{token}}
+
+### 4. List Marketplace Listings with Market Prices (English)
+GET {{baseUrl}}/marketplace/listings
+Authorization: Bearer {{token}}
+Accept-Language: en
+
+### 5. List Marketplace Listings with Mahsoly Price Comparison (Arabic)
+GET {{baseUrl}}/marketplace/listings?lang=ar
+Authorization: Bearer {{token}}
+Accept-Language: ar-EG
+
+### 6. Create a Market Listing with Price Suggestion from Mahsoly
+POST {{baseUrl}}/marketplace/listings
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "title": "Premium Wheat",
+  "description": "High quality wheat from Delta region",
+  "crop": "Wheat",
+  "quantity": 500,
+  "unit": "kg",
+  "pricePerUnit": 450,
+  "location": "Dakahlia, Egypt"
+}
+
+### 7. Create a Market Listing with Arabic Response
+POST {{baseUrl}}/marketplace/listings?lang=ar
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "title": "أرز عالي الجودة",
+  "description": "أرز بلاسماتي من منطقة الدلتا",
+  "crop": "Rice",
+  "quantity": 300,
+  "unit": "kg",
+  "pricePerUnit": 680,
+  "location": "Sharqia, Egypt"
+}
+
+### 8. Create a Market Listing with Egyptian Arabic Price Suggestion
+POST {{baseUrl}}/marketplace/listings?lang=ar-EG
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "title": "ذرة سوداء",
+  "description": "ذرة عالية الجودة",
+  "crop": "Corn",
+  "quantity": 200,
+  "unit": "kg",
+  "pricePerUnit": 385,
+  "location": "Minoufiya, Egypt"
+}
+
+### 9. Get Marketplace Listings with Full Mahsoly Price Comparison
+GET {{baseUrl}}/marketplace/listings
+Authorization: Bearer {{token}}
+
+### Response includes:
+### - listing details (title, description, crop, quantity, unit, price)
+### - farmer info (name, email)
+### - marketPriceData: Current prices from Mahsoly API
+### - priceComparison:
+###   * listingPrice: Farmer's listed price
+###   * marketPrice: Current market price from Mahsoly
+###   * marketCurrency: Currency (EGP)
+###   * source: Data source (mahsoly)

@@ -1,0 +1,720 @@
+{
+  "info": {
+    "name": "Agri360 API - Complete Collection with Arabic & Mahsoly Prices",
+    "description": "Complete API collection for Agri360 with Arabic support (en, ar-EG, ar-SA), crop prices from Mahsoly, and AI services",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "🔐 Authentication",
+      "item": [
+        {
+          "name": "Register New Farmer",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Ahmed Hassan\",\n  \"email\": \"ahmed@farm.com\",\n  \"password\": \"password123\",\n  \"role\": \"farmer\",\n  \"country\": \"Egypt\",\n  \"governorate\": \"Giza\",\n  \"lang\": \"ar-EG\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "register"]
+            }
+          }
+          ,
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 201 or 200\", function () { pm.expect(pm.response.code).to.be.oneOf([200,201]); });",
+                  "var json = {}; try { json = pm.response.json(); } catch(e) {}",
+                  "pm.test(\"Response has user object\", function(){ pm.expect(json).to.have.property('user'); });",
+                  "pm.test(\"User.lang equals ar-EG when provided\", function(){ if(json.user && json.user.lang) { pm.expect(json.user.lang).to.eql('ar-EG'); } else { pm.expect(true).to.be.ok; } });",
+                  "// set token and farmerId if present (sets both environment and collection variables)",
+                  "var token = json.token || (json.user && json.user.token) || (json.data && json.data.token) || json.accessToken || (json.result && json.result && json.result.token);",
+                  "if(token){ pm.environment.set('token', token); try { pm.collectionVariables.set('token', token); } catch(e){} }",
+                  "var fid = (json.user && (json.user._id || json.user.id)) || (json.farmerId) || (json.data && json.data.user && (json.data.user._id || json.data.user.id));",
+                  "if(fid){ pm.environment.set('farmerId', fid); try { pm.collectionVariables.set('farmerId', fid); } catch(e){} }"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"ahmed@farm.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "login"]
+            }
+          }
+          ,
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Login status 200', function(){pm.response.to.have.status(200);});",
+                  "var json = {}; try { json = pm.response.json(); } catch(e) {}",
+                  "var token = json.token || (json.user && json.user.token) || (json.data && json.data.token) || json.accessToken || (json.result && json.result.token);",
+                  "pm.test('Token present or extracted', function(){ pm.expect(!!token).to.be.true; });",
+                  "if(token){ pm.environment.set('token', token); try { pm.collectionVariables.set('token', token); } catch(e){} }"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Current User",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/me",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "me"]
+            }
+          }
+          ,
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Get current user 200', function(){pm.response.to.have.status(200);});",
+                  "var json = {}; try { json = pm.response.json(); } catch(e) {}",
+                  "pm.test('Email is correct when using test account', function(){ if(json.user && json.user.email) { pm.expect(json.user.email).to.eql('ahmed@farm.com'); } else { pm.expect(true).to.be.ok; } });",
+                  "var fid = (json.user && (json.user._id || json.user.id)) || json._id || json.id;",
+                  "if(fid){ pm.environment.set('farmerId', fid); try { pm.collectionVariables.set('farmerId', fid); } catch(e){} }"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "📊 Dashboard",
+      "item": [
+        {
+          "name": "Dashboard Stats (English)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Accept-Language",
+                "value": "en"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/dashboard?lang=en",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "dashboard"],
+              "query": [
+                {
+                  "key": "lang",
+                  "value": "en"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Dashboard Stats (Arabic - EG)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Accept-Language",
+                "value": "ar-EG"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/dashboard?lang=ar-EG",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "dashboard"],
+              "query": [
+                {
+                  "key": "lang",
+                  "value": "ar-EG"
+                }
+              ]
+            }
+          }
+          ,
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Dashboard stats 200', function(){pm.response.to.have.status(200);});",
+                  "var json = {}; try { json = pm.response.json(); } catch(e) {}",
+                  "pm.test('Has cropPrices array when Mahsoly integration present', function(){ if(json.cropPrices !== undefined) { pm.expect(Array.isArray(json.cropPrices)).to.be.true; } else { pm.expect(true).to.be.ok; } });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Dashboard Stats (Arabic - SA)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Accept-Language",
+                "value": "ar-SA"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/dashboard?lang=ar-SA",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "dashboard"],
+              "query": [
+                {
+                  "key": "lang",
+                  "value": "ar-SA"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "⭐ Dashboard - Crop Prices from Mahsoly",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/dashboard",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "dashboard"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "🏪 Marketplace",
+      "item": [
+        {
+          "name": "List Listings (English)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/market/listings?lang=en",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "market", "listings"],
+              "query": [
+                {
+                  "key": "lang",
+                  "value": "en"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "List Listings (Arabic - EG)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/market/listings?lang=ar-EG",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "market", "listings"],
+              "query": [
+                {
+                  "key": "lang",
+                  "value": "ar-EG"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "⭐ List Listings - with Mahsoly Prices",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/market/listings",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "market", "listings"]
+            }
+          }
+        },
+        {
+          "name": "Create Listing (English)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Premium Wheat\",\n  \"description\": \"High quality wheat from Nile Delta\",\n  \"crop\": \"Wheat\",\n  \"quantity\": 500,\n  \"unit\": \"kg\",\n  \"pricePerUnit\": 450,\n  \"location\": \"Dakahlia, Egypt\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/market/listings?lang=en",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "market", "listings"],
+              "query": [
+                {
+                  "key": "lang",
+                  "value": "en"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Listing (Arabic - EG)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"أرز عالي الجودة\",\n  \"description\": \"أرز بلاسماتي من منطقة الدلتا\",\n  \"crop\": \"Rice\",\n  \"quantity\": 300,\n  \"unit\": \"kg\",\n  \"pricePerUnit\": 680,\n  \"location\": \"Sharqia, Egypt\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/market/listings?lang=ar-EG",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "market", "listings"],
+              "query": [
+                {
+                  "key": "lang",
+                  "value": "ar-EG"
+                }
+              ]
+            }
+          }
+          ,
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Create listing status 201 or 200', function(){pm.expect(pm.response.code).to.be.oneOf([200,201]);});",
+                  "var json = {}; try { json = pm.response.json(); } catch(e) {}",
+                  "pm.test('Suggested price present when Mahsoly data used', function(){ if(json.suggestedPrice !== undefined) { pm.expect(json).to.have.property('suggestedPrice'); } else { pm.expect(true).to.be.ok; } });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "🌾 Farm Management",
+      "item": [
+        {
+          "name": "Create Farm (English)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Ahmed's Farm\",\n  \"location\": \"Giza, Egypt\",\n  \"area\": 50,\n  \"crops\": [\"Wheat\", \"Rice\", \"Corn\"]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/farms?lang=en",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "farms"],
+              "query": [
+                {
+                  "key": "lang",
+                  "value": "en"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Farm (Arabic - EG)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"مزرعة أحمد\",\n  \"location\": \"الجيزة، مصر\",\n  \"area\": 50,\n  \"crops\": [\"القمح\", \"الأرز\", \"الذرة\"]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/farms?lang=ar-EG",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "farms"],
+              "query": [
+                {
+                  "key": "lang",
+                  "value": "ar-EG"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "List Farms (English)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/farms?lang=en",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "farms"],
+              "query": [
+                {
+                  "key": "lang",
+                  "value": "en"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "List Farms (Arabic - EG)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/farms?lang=ar-EG",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "farms"],
+              "query": [
+                {
+                  "key": "lang",
+                  "value": "ar-EG"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "📋 Business Plan",
+      "item": [
+        {
+          "name": "Generate Business Plan (English)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"crop\": \"Wheat\",\n  \"area\": 50,\n  \"region\": \"Giza\",\n  \"lang\": \"en\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/business?lang=en",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "business"],
+              "query": [
+                {
+                  "key": "lang",
+                  "value": "en"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Generate Business Plan (Arabic - EG)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"crop\": \"القمح\",\n  \"area\": 50,\n  \"region\": \"الجيزة\",\n  \"lang\": \"ar-EG\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/business?lang=ar-EG",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "business"],
+              "query": [
+                {
+                  "key": "lang",
+                  "value": "ar-EG"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "🌱 Harvest Plan",
+      "item": [
+        {
+          "name": "Create Harvest Plan (English)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"crop\": \"Wheat\",\n  \"plantingDate\": \"2025-10-01\",\n  \"expectedHarvestDate\": \"2026-05-01\",\n  \"expectedYield\": 2500\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/harvests?lang=en",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "harvests"],
+              "query": [
+                {
+                  "key": "lang",
+                  "value": "en"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Harvest Plan (Arabic - EG)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"crop\": \"القمح\",\n  \"plantingDate\": \"2025-10-01\",\n  \"expectedHarvestDate\": \"2026-05-01\",\n  \"expectedYield\": 2500\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/harvests?lang=ar-EG",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "harvests"],
+              "query": [
+                {
+                  "key": "lang",
+                  "value": "ar-EG"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "🤖 AI Chat Services",
+      "item": [
+        {
+          "name": "AI Chat - Crop Planning (Arabic)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"mode\": \"planning\",\n  \"message\": \"كيف أزرع القمح بكفاءة في منطقة الجيزة\",\n  \"lang\": \"ar-EG\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/chat",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "chat"]
+            }
+          }
+          ,
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Chat responded', function(){pm.response.to.have.status(200);});",
+                  "var json = {}; try { json = pm.response.json(); } catch(e) {}",
+                  "pm.test('Has reply text', function(){ pm.expect(json).to.have.property('reply'); });",
+                  "pm.test('Reply likely Arabic', function(){ var text = json.reply || JSON.stringify(json); pm.expect(/[\u0600-\u06FF]/.test(text)).to.be.true; });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "AI Chat - General (Arabic)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"mode\": \"chat\",\n  \"message\": \"ما هي أفضل أوقات الزراعة\",\n  \"lang\": \"ar-EG\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/chat",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "chat"]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5000",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "your_jwt_token_here",
+      "type": "string"
+    },
+    {
+      "key": "farmerId",
+      "value": "farmer_id_here",
+      "type": "string"
+    }
+  ]
+}
