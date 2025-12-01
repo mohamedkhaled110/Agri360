@@ -310,17 +310,41 @@ npm run dev
 
 ## 📸 Screenshots
 
-### Dashboard
+### 🏠 Landing Page
 
-> Real-time overview of farm statistics, weather, and crop prices
+<div align="center">
 
-### AI Plan Generator
+| English                                             | العربية                                            |
+| --------------------------------------------------- | -------------------------------------------------- |
+| ![Landing Page English](screenshots/landing-en.png) | ![Landing Page Arabic](screenshots/landing-ar.png) |
 
-> Create detailed farming, business, and marketing plans with AI
+</div>
 
-### Marketplace
+> Modern, responsive landing page with bilingual support (English/Arabic)
 
-> Buy and sell agricultural products
+### 🔐 Authentication
+
+<div align="center">
+
+| English                                       | العربية                                      |
+| --------------------------------------------- | -------------------------------------------- |
+| ![Sign In English](screenshots/signin-en.png) | ![Sign In Arabic](screenshots/signin-ar.png) |
+
+</div>
+
+> Secure authentication with RTL support for Arabic users
+
+### 📊 Dashboard
+
+<div align="center">
+
+| English                                            | العربية                                           |
+| -------------------------------------------------- | ------------------------------------------------- |
+| ![Dashboard English](screenshots/dashboard-en.png) | ![Dashboard Arabic](screenshots/dashboard-ar.png) |
+
+</div>
+
+> Real-time weather updates, crop prices, calendar, and farm statistics
 
 ---
 
@@ -351,9 +375,9 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 👨‍💻 Author
 
-**Your Name**
+**Mohamed Khaled Yahya**
 
-- GitHub: [@YOUR_USERNAME](https://github.com/YOUR_USERNAME)
+- GitHub: [@mohamedkhaled110](https://github.com/mohamedkhaled110)
 
 ---
 
