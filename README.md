@@ -144,21 +144,20 @@ agri360/
 │   ├── 📂 utils/                # Utility functions
 │   └── server.js                # Entry point
 │
-├── 📂 v0-agre-360-frontend-main/ # Frontend application
-│   └── v0-agre-360-frontend-main/
-│       ├── 📂 app/              # Next.js App Router pages
+├── 📂 Agri360frontend/           # Frontend application
+│   ├── 📂 app/                  # Next.js App Router pages
 │       │   ├── dashboard/       # Dashboard pages
 │       │   ├── planning/        # Plan creation
 │       │   ├── farms/           # Farm management
 │       │   ├── chat/            # AI chat
-│       │   └── ...
-│       ├── 📂 components/       # React components
-│       │   ├── ui/              # shadcn/ui components
-│       │   ├── plan-editor.tsx  # AI plan generator
-│       │   └── ...
-│       ├── 📂 contexts/         # React contexts
-│       ├── 📂 lib/              # Utilities & API client
-│       └── 📂 public/           # Static assets
+│   │   └── ...
+│   ├── 📂 components/           # React components
+│   │   ├── ui/                  # shadcn/ui components
+│   │   ├── plan-editor.tsx      # AI plan generator
+│   │   └── ...
+│   ├── 📂 contexts/             # React contexts
+│   ├── 📂 lib/                  # Utilities & API client
+│   └── 📂 public/               # Static assets
 │
 ├── 📄 README.md                 # This file
 └── 📄 start-servers.ps1         # Server startup script
@@ -178,7 +177,7 @@ agri360/
 ### Clone the Repository
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/Agri360.git
+git clone https://github.com/mohamedkhaled110/Agri360.git
 cd Agri360
 ```
 
@@ -190,7 +189,7 @@ cd "Agri360 backend"
 npm install
 
 # Install frontend dependencies
-cd "../v0-agre-360-frontend-main/v0-agre-360-frontend-main"
+cd "../Agri360frontend"
 npm install
 ```
 
@@ -220,7 +219,7 @@ MAHSOLY_API_KEY=your-mahsoly-api-key
 WEATHER_API_KEY=your-weather-api-key
 ```
 
-### Frontend (`v0-agre-360-frontend-main/v0-agre-360-frontend-main/.env.local`)
+### Frontend (`Agri360frontend/.env.local`)
 
 ```env
 NEXT_PUBLIC_API_URL=http://localhost:5000/api
@@ -250,7 +249,7 @@ node server.js
 **Terminal 2 - Frontend:**
 
 ```bash
-cd "v0-agre-360-frontend-main/v0-agre-360-frontend-main"
+cd "Agri360frontend"
 npm run dev
 ```
 
