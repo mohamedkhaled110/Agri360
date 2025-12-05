@@ -6,7 +6,7 @@ router.get("/test-api", (req, res) => {
     status: "ok",
     message: "Backend is working!",
     time: new Date(),
-    environment: process.env.NODE_ENV || "development"
+    environment: process.env.NODE_ENV || "development",
   });
 });
 

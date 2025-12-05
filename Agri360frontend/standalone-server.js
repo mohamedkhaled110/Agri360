@@ -2,7 +2,9 @@ const http = require("http");
 const fs = require("fs");
 const path = require("path");
 
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
+const BACKEND_HOST = process.env.NEXT_PUBLIC_API_HOST || "101.46.70.155";
+const BACKEND_PORT = process.env.BACKEND_PORT || 5000;
 const NEXT_BUILD_DIR = path.join(__dirname, ".next/standalone");
 
 // Try to require the Next.js standalone server
@@ -46,13 +48,13 @@ const server = http.createServer((req, res) => {
   if (req.url.startsWith("/api/")) {
     const proxyReq = http.request(
       {
-        hostname: "localhost",
-        port: 5000,
+        hostname: BACKEND_HOST,
+        port: BACKEND_PORT,
         path: req.url,
         method: req.method,
         headers: {
           ...req.headers,
-          host: "localhost:5000",
+          host: `${BACKEND_HOST}:${BACKEND_PORT}`,
         },
       },
       (proxyRes) => {
@@ -92,9 +94,9 @@ const server = http.createServer((req, res) => {
 });
 
 server.listen(PORT, "0.0.0.0", () => {
-  console.log(`✅ Server running at http://localhost:${PORT}`);
-  console.log(`✅ Backend API proxied from http://localhost:5000`);
-  console.log(`✅ Navigate to http://localhost:${PORT}/dashboard/marketplace`);
+  console.log(`✅ Server running at http://${BACKEND_HOST}:${PORT}`);
+  console.log(`✅ Backend API: http://${BACKEND_HOST}:${BACKEND_PORT}/api`);
+  console.log(`✅ Navigate to http://${BACKEND_HOST}:${PORT}/dashboard`);
 });
 
 server.on("error", (err) => {

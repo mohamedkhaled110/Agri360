@@ -2,9 +2,10 @@
 const http = require("http");
 const net = require("net");
 
-const PORT = 3000;
-const BACKEND_HOST = "localhost";
-const BACKEND_PORT = 5000;
+const PORT = process.env.PORT || 3000;
+const BACKEND_HOST = process.env.NEXT_PUBLIC_API_HOST || "101.46.70.155";
+const BACKEND_PORT = process.env.BACKEND_PORT || 5000;
+const API_URL = process.env.NEXT_PUBLIC_API_URL || `http://${BACKEND_HOST}/api`;
 
 // Simple proxy function
 function proxyRequest(clientReq, clientRes, targetHost, targetPort) {
@@ -81,7 +82,7 @@ const server = http.createServer((req, res) => {
       <div class="container">
         <h1>🌿 Agri360 API Proxy Server</h1>
         <div class="status success">✅ Server is running on port ${PORT}</div>
-        <div class="status info">ℹ️ Backend API available at http://localhost:${BACKEND_PORT}</div>
+        <div class="status info">ℹ️ Backend API: ${API_URL}</div>
         <div class="status info">📡 Proxy all /api/* requests to backend</div>
         <hr>
         <h2>Available API Endpoints:</h2>
@@ -108,15 +109,15 @@ server.on("error", (err) => {
 });
 
 // Start server
-server.listen(PORT, "127.0.0.1", () => {
+server.listen(PORT, "0.0.0.0", () => {
   console.log("");
   console.log("════════════════════════════════════════════════");
   console.log("✅ Agri360 API Proxy Server Started");
   console.log("════════════════════════════════════════════════");
-  console.log(`🌐 Frontend Server: http://localhost:${PORT}`);
-  console.log(`🔗 Backend API:     http://localhost:${BACKEND_PORT}`);
+  console.log(`🌐 Frontend Server: http://${BACKEND_HOST}:${PORT}`);
+  console.log(`🔗 Backend API:     ${API_URL}`);
   console.log(
-    `📡 API Proxy:       /api/* → http://localhost:${BACKEND_PORT}/api/*`
+    `📡 API Proxy:       /api/* → http://${BACKEND_HOST}:${BACKEND_PORT}/api/*`
   );
   console.log("════════════════════════════════════════════════");
   console.log("");

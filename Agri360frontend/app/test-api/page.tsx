@@ -33,7 +33,10 @@ export default function TestAPIPage() {
   const testBackendHealth = async () => {
     addResult({ name: "Testing Backend Health", status: "loading" })
     try {
-      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'
+      const API_URL = process.env.NEXT_PUBLIC_API_URL
+      if (!API_URL) {
+        throw new Error('NEXT_PUBLIC_API_URL is not configured')
+      }
       const res = await fetch(`${API_URL}/test-api`)
       const data = await res.json()
       addResult({

@@ -31,7 +31,7 @@ app.use(
       "http://localhost:3000",
       "http://127.0.0.1:3000",
       "http://101.46.70.155",
-      "http://101.46.70.155:80"
+      "http://101.46.70.155:80",
     ],
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],

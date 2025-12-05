@@ -237,7 +237,12 @@ export default function DashboardPage() {
   const fetchCropPrices = async () => {
     try {
       // Try to fetch from backend market API
-      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'
+      const API_URL = process.env.NEXT_PUBLIC_API_URL
+      if (!API_URL) {
+        console.warn('NEXT_PUBLIC_API_URL not set')
+        setCropPrices(DEFAULT_CROP_PRICES)
+        return
+      }
       const res = await fetch(`${API_URL}/market/prices`)
       if (res.ok) {
         const data = await res.json()
