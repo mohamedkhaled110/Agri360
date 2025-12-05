@@ -29,6 +29,27 @@ export default function TestAPIPage() {
 
   const clearResults = () => setResults([])
 
+  // Test Backend Health
+  const testBackendHealth = async () => {
+    addResult({ name: "Testing Backend Health", status: "loading" })
+    try {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'
+      const res = await fetch(`${API_URL}/test-api`)
+      const data = await res.json()
+      addResult({
+        name: "✅ Backend Health",
+        status: "success",
+        response: data,
+      })
+    } catch (err: any) {
+      addResult({
+        name: "❌ Backend Health",
+        status: "error",
+        error: err.message,
+      })
+    }
+  }
+
   // Test Auth - Register
   const testRegister = async () => {
     const testName = `Test User ${Date.now()}`
@@ -553,6 +574,9 @@ export default function TestAPIPage() {
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+              <Button onClick={testBackendHealth} variant="default" size="sm" className="bg-green-600 hover:bg-green-700">
+                🔥 Backend Health
+              </Button>
               <Button onClick={testRegister} variant="outline" size="sm">
                 Register
               </Button>

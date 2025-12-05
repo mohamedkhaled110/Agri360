@@ -15,6 +15,7 @@ import marketplaceRoutes from "./routes/marketplace.routes.js";
 import chatRoutes from "./routes/chat.routes.js";
 import weatherRoutes from "./routes/weather.routes.js";
 import marketRoutes from "./routes/market.routes.js";
+import testRoutes from "./routes/test.routes.js";
 import { errorHandler } from "./middleware/errorHandler.js";
 import detectLanguage from "./middleware/language.js";
 
@@ -26,7 +27,12 @@ const app = express();
 // CORS configuration - allow frontend to connect
 app.use(
   cors({
-    origin: ["http://localhost:3000", "http://127.0.0.1:3000"],
+    origin: [
+      "http://localhost:3000",
+      "http://127.0.0.1:3000",
+      "http://101.46.70.155",
+      "http://101.46.70.155:80"
+    ],
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
     allowedHeaders: ["Content-Type", "Authorization"],
@@ -55,6 +61,7 @@ app.use("/api/marketplace", marketplaceRoutes); // alias
 app.use("/api/chat", chatRoutes);
 app.use("/api/weather", weatherRoutes);
 app.use("/api/market", marketRoutes);
+app.use("/api", testRoutes);
 
 // Backwards-compatible mounts without /api prefix (supports older collection URLs)
 app.use("/auth", authRoutes);
