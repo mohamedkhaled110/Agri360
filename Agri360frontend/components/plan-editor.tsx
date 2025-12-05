@@ -206,7 +206,7 @@ export function PlanEditor({ planType = "farming" }: PlanEditorProps) {
   }
 
   // Parse phases from generated plan text
-  const parsePhasesFromPlan = (planText: string): any[] => {
+  const parsePhasesFromPlan = (planText: string, type: string = planType): any[] => {
     const phases: any[] = []
     const now = safeDate(new Date()) || new Date()
     
@@ -295,7 +295,7 @@ export function PlanEditor({ planType = "farming" }: PlanEditorProps) {
         ],
       }
       
-      const defaultPhases = defaultPhasesByType[planType] || defaultPhasesByType.farming
+      const defaultPhases = defaultPhasesByType[type] || defaultPhasesByType.farming
       
       let currentDate = new Date(now)
       defaultPhases.forEach((phase, i) => {

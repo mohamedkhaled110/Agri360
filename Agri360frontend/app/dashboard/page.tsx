@@ -361,20 +361,61 @@ export default function DashboardPage() {
     
     if (plan.phases && Array.isArray(plan.phases) && plan.phases.length > 0) {
       phases = plan.phases.map((p: any) => ({
-        name: language === 'ar' ? p.nameArabic || p.name : p.name,
+        name: language === 'ar' ? (p.nameArabic || p.nameAr || p.name) : (p.name || p.nameEn),
         status: p.status || 'pending',
-        progress: p.progress || 0,
+        progress: typeof p.progress === 'number' ? p.progress : 0,
         startDate: p.startDate,
         endDate: p.endDate,
       }))
     } else {
-      // Fallback default phases - all start at 0%
-      phases = [
-        { name: language === 'ar' ? 'التخطيط' : 'Planning', status: 'pending', progress: 0 },
-        { name: language === 'ar' ? 'التنفيذ' : 'Implementation', status: 'pending', progress: 0 },
-        { name: language === 'ar' ? 'المراقبة' : 'Monitoring', status: 'pending', progress: 0 },
-        { name: language === 'ar' ? 'الحصاد' : 'Harvest', status: 'pending', progress: 0 },
-      ]
+      // Generate default phases based on plan type
+      const defaultPhasesByType: Record<string, { nameEn: string; nameAr: string }[]> = {
+        farming: [
+          { nameEn: 'Land Preparation', nameAr: 'تجهيز الأرض' },
+          { nameEn: 'Planting', nameAr: 'الزراعة' },
+          { nameEn: 'Growth', nameAr: 'النمو' },
+          { nameEn: 'Harvest', nameAr: 'الحصاد' },
+        ],
+        business: [
+          { nameEn: 'Research', nameAr: 'البحث' },
+          { nameEn: 'Investment', nameAr: 'الاستثمار' },
+          { nameEn: 'Operations', nameAr: 'التشغيل' },
+          { nameEn: 'Growth', nameAr: 'النمو' },
+        ],
+        market: [
+          { nameEn: 'Research', nameAr: 'البحث' },
+          { nameEn: 'Preparation', nameAr: 'التجهيز' },
+          { nameEn: 'Sales', nameAr: 'المبيعات' },
+          { nameEn: 'Delivery', nameAr: 'التوصيل' },
+        ],
+        crop: [
+          { nameEn: 'Preparation', nameAr: 'التجهيز' },
+          { nameEn: 'Planting', nameAr: 'الزراعة' },
+          { nameEn: 'Care', nameAr: 'الرعاية' },
+          { nameEn: 'Harvest', nameAr: 'الحصاد' },
+        ],
+        animal: [
+          { nameEn: 'Setup', nameAr: 'الإعداد' },
+          { nameEn: 'Acquisition', nameAr: 'الشراء' },
+          { nameEn: 'Care', nameAr: 'الرعاية' },
+          { nameEn: 'Production', nameAr: 'الإنتاج' },
+        ],
+        mixed: [
+          { nameEn: 'Planning', nameAr: 'التخطيط' },
+          { nameEn: 'Setup', nameAr: 'الإعداد' },
+          { nameEn: 'Operations', nameAr: 'التشغيل' },
+          { nameEn: 'Harvest', nameAr: 'الحصاد' },
+        ],
+      }
+      
+      const planType = plan.planType || plan.type || 'farming'
+      const defaultPhases = defaultPhasesByType[planType] || defaultPhasesByType.farming
+      
+      phases = defaultPhases.map((p, i) => ({
+        name: language === 'ar' ? p.nameAr : p.nameEn,
+        status: i === 0 ? 'in-progress' : 'pending',
+        progress: i === 0 ? 10 : 0,
+      }))
     }
     
     const totalProgress = phases.length > 0 
@@ -951,28 +992,39 @@ export default function DashboardPage() {
                       {/* Progress Bar */}
                       <Progress value={totalProgress} className="h-2 mb-3" />
                       
-                      {/* Phases */}
-                      <div className="grid grid-cols-4 gap-2">
-                        {phases.map((phase: any, i: number) => (
-                          <div key={i} className="text-center">
-                            <div className={`w-8 h-8 rounded-full mx-auto mb-1 flex items-center justify-center ${
-                              phase.status === 'completed' ? 'bg-green-500 text-white' :
-                              phase.status === 'in-progress' ? 'bg-blue-500 text-white' :
-                              'bg-muted text-muted-foreground'
-                            }`}>
-                              {phase.status === 'completed' ? (
-                                <CheckCircle2 className="h-4 w-4" />
-                              ) : phase.status === 'in-progress' ? (
-                                <Clock className="h-4 w-4" />
-                              ) : (
-                                <Circle className="h-4 w-4" />
-                              )}
+                      {/* Phases - Flexible grid based on phase count */}
+                      {phases.length > 0 ? (
+                        <div className={`grid gap-2 ${
+                          phases.length <= 3 ? 'grid-cols-3' : 
+                          phases.length === 4 ? 'grid-cols-4' : 
+                          phases.length === 5 ? 'grid-cols-5' : 
+                          'grid-cols-4'
+                        }`}>
+                          {phases.slice(0, 5).map((phase: any, i: number) => (
+                            <div key={i} className="text-center">
+                              <div className={`w-8 h-8 rounded-full mx-auto mb-1 flex items-center justify-center ${
+                                phase.status === 'completed' ? 'bg-green-500 text-white' :
+                                phase.status === 'in-progress' ? 'bg-blue-500 text-white' :
+                                'bg-muted text-muted-foreground'
+                              }`}>
+                                {phase.status === 'completed' ? (
+                                  <CheckCircle2 className="h-4 w-4" />
+                                ) : phase.status === 'in-progress' ? (
+                                  <Clock className="h-4 w-4" />
+                                ) : (
+                                  <Circle className="h-4 w-4" />
+                                )}
+                              </div>
+                              <div className="text-xs font-medium truncate" title={phase.name}>{phase.name}</div>
+                              <div className="text-xs text-muted-foreground">{phase.progress || 0}%</div>
                             </div>
-                            <div className="text-xs font-medium truncate">{phase.name}</div>
-                            <div className="text-xs text-muted-foreground">{phase.progress}%</div>
-                          </div>
-                        ))}
-                      </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="text-center text-sm text-muted-foreground py-2">
+                          {language === 'ar' ? 'لا توجد مراحل محددة' : 'No phases defined'}
+                        </div>
+                      )}
                       
                       {/* Actions */}
                       <div className="flex gap-2 mt-3 pt-3 border-t">
