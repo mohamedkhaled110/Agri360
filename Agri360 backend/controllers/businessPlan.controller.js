@@ -227,6 +227,77 @@ const generateDefaultPhases = (planType, language = "en") => {
 };
 
 /**
+ * Safely parse a date, returning null for invalid dates
+ * Prevents "Invalid time value" errors
+ */
+const safeDate = (d) => {
+  if (
+    d === null ||
+    d === undefined ||
+    d === "" ||
+    d === "null" ||
+    d === "undefined" ||
+    d === "Invalid Date"
+  ) {
+    return null;
+  }
+  try {
+    const parsed = d instanceof Date ? d : new Date(d);
+    if (isNaN(parsed.getTime())) {
+      console.warn("⚠️ Invalid date detected:", d);
+      return null;
+    }
+    return parsed;
+  } catch (err) {
+    console.warn("⚠️ Date parsing error:", d, err.message);
+    return null;
+  }
+};
+
+/**
+ * Sanitize tasks to ensure all dates are valid
+ */
+const sanitizeTasks = (tasks) => {
+  if (!Array.isArray(tasks)) return [];
+  return tasks.map((task) => ({
+    ...task,
+    dueDate: safeDate(task.dueDate) || null,
+  }));
+};
+
+/**
+ * Sanitize phases to ensure all dates are valid
+ */
+const sanitizePhases = (phases) => {
+  if (!Array.isArray(phases)) return [];
+
+  console.log("🔍 Sanitizing", phases.length, "phases...");
+
+  return phases.map((phase, index) => {
+    const now = new Date();
+    const defaultStart = new Date(now);
+    defaultStart.setDate(defaultStart.getDate() + index * 14);
+    const defaultEnd = new Date(defaultStart);
+    defaultEnd.setDate(defaultEnd.getDate() + 14);
+
+    const sanitizedPhase = {
+      ...phase,
+      startDate: safeDate(phase.startDate) || defaultStart,
+      endDate: safeDate(phase.endDate) || defaultEnd,
+      tasks: sanitizeTasks(phase.tasks),
+    };
+
+    console.log(
+      `  Phase ${index + 1}: ${sanitizedPhase.name} - ${
+        sanitizedPhase.startDate?.toISOString?.() || "null"
+      } to ${sanitizedPhase.endDate?.toISOString?.() || "null"}`
+    );
+
+    return sanitizedPhase;
+  });
+};
+
+/**
  * Simple save plan - saves an already generated plan without calling AI
  * Links to user's farm automatically
  */
@@ -255,14 +326,25 @@ export const savePlan = async (req, res) => {
       }
     }
 
-    // Generate phases if not provided
-    const phases = customPhases || generateDefaultPhases(type || "farming");
-    const startDate = phases[0]?.startDate || new Date();
-    const endDate = phases[phases.length - 1]?.endDate || new Date();
+    // Sanitize phases to prevent invalid date errors
+    const rawPhases = customPhases || generateDefaultPhases(type || "farming");
+    const phases = sanitizePhases(rawPhases);
 
-    // Calculate duration in months
-    const durationMs = new Date(endDate) - new Date(startDate);
-    const durationMonths = Math.ceil(durationMs / (1000 * 60 * 60 * 24 * 30));
+    // Safely get start and end dates with fallbacks
+    const startDate = safeDate(phases[0]?.startDate) || new Date();
+    const endDate = safeDate(phases[phases.length - 1]?.endDate) || new Date();
+
+    // Calculate duration in months (safely)
+    const startMs = startDate.getTime();
+    const endMs = endDate.getTime();
+    const durationMs = endMs > startMs ? endMs - startMs : 0;
+    const durationMonths = Math.max(
+      1,
+      Math.ceil(durationMs / (1000 * 60 * 60 * 24 * 30))
+    );
+
+    // Safely parse approvedAt
+    const approvedAt = safeDate(content.approvedAt) || new Date();
 
     const plan = await BusinessPlan.create({
       farmer: userId,
@@ -277,7 +359,7 @@ export const savePlan = async (req, res) => {
       aiAdvice: {
         fullPlan: content.plan,
         prompt: content.prompt,
-        approvedAt: content.approvedAt || new Date().toISOString(),
+        approvedAt: approvedAt.toISOString(),
       },
       status: "approved",
       statusHistory: [

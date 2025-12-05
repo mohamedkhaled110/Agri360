@@ -193,32 +193,68 @@ export default function DashboardPage() {
     try {
       const weatherApi = (await import("@/lib/api")).weather
       
-      // Try to get user's actual location first
+      // Check if we have stored location preference
+      const storedLocation = typeof window !== 'undefined' ? localStorage.getItem('userLocation') : null
+      
+      if (storedLocation) {
+        try {
+          const coords = JSON.parse(storedLocation)
+          const data = await weatherApi.getCurrent(undefined, coords)
+          // Get location name
+          try {
+            const geoRes = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${coords.lat}&lon=${coords.lon}`, {
+              headers: { 'User-Agent': 'Agri360/1.0' }
+            })
+            const geoData = await geoRes.json()
+            data.location = geoData.address?.city || geoData.address?.town || geoData.address?.village || geoData.address?.state || 'Your Location'
+          } catch { /* ignore */ }
+          setWeatherData(data)
+          return
+        } catch {
+          // Stored location failed, clear it
+          localStorage.removeItem('userLocation')
+        }
+      }
+      
+      // Try to get user's actual location via browser geolocation
       try {
+        console.log('Requesting browser geolocation...')
         const coords = await weatherApi.getUserLocation()
+        console.log('Got location:', coords)
+        
+        // Store for future use
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('userLocation', JSON.stringify(coords))
+        }
+        
         const data = await weatherApi.getCurrent(undefined, coords)
-        // Try to reverse geocode for location name
+        
+        // Reverse geocode for location name
         try {
           const geoRes = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${coords.lat}&lon=${coords.lon}`, {
             headers: { 'User-Agent': 'Agri360/1.0' }
           })
           const geoData = await geoRes.json()
-          data.location = geoData.address?.city || geoData.address?.town || geoData.address?.state || 'Your Location'
+          data.location = geoData.address?.city || geoData.address?.town || geoData.address?.village || geoData.address?.state || 'Your Location'
         } catch { /* ignore reverse geocode errors */ }
+        
         setWeatherData(data)
         return
-      } catch {
+      } catch (geoErr) {
+        console.warn('Geolocation failed:', geoErr)
         // Geolocation denied or failed, use farm location or default
       }
       
       // Fallback to farm location or Cairo
-      const data = await weatherApi.getCurrent(farmData?.location || 'Cairo, Egypt')
+      const fallbackLocation = farmData?.location || user?.governorate || 'Cairo, Egypt'
+      console.log('Using fallback location:', fallbackLocation)
+      const data = await weatherApi.getCurrent(fallbackLocation)
       setWeatherData(data)
     } catch (err) {
       console.warn('Weather fetch error:', err)
       // Use fallback data
       setWeatherData({
-        location: farmData?.location || 'Cairo, Egypt',
+        location: farmData?.location || user?.governorate || 'Cairo, Egypt',
         temperature: 28,
         humidity: 45,
         windSpeed: 12,
@@ -600,7 +636,21 @@ export default function DashboardPage() {
             <CardHeader className="pb-2">
               <CardTitle className="flex items-center justify-between">
                 <span>{language === 'ar' ? 'الطقس الحالي' : 'Current Weather'}</span>
-                <MapPin className="h-4 w-4" />
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="text-white hover:bg-blue-400/20 h-8 px-2"
+                  onClick={async () => {
+                    // Clear stored location to force re-request
+                    if (typeof window !== 'undefined') {
+                      localStorage.removeItem('userLocation')
+                    }
+                    await fetchWeatherData()
+                  }}
+                  title={language === 'ar' ? 'تحديث الموقع' : 'Update Location'}
+                >
+                  <MapPin className="h-4 w-4" />
+                </Button>
               </CardTitle>
               <CardDescription className="text-blue-100">
                 {weatherData?.location || farmData?.location || (language === 'ar' ? 'موقعك' : 'Your Location')}

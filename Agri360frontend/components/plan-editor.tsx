@@ -15,6 +15,7 @@ import {
 } from 'lucide-react'
 import { cn } from "@/lib/utils"
 import { MarkdownRenderer } from "@/components/markdown-renderer"
+import { safeDate, safeDateToISO } from "@/lib/api"
 
 interface PlanEditorProps {
   planType: "business" | "farming" | "market" | "crop" | "animal" | "mixed"
@@ -207,7 +208,7 @@ export function PlanEditor({ planType = "farming" }: PlanEditorProps) {
   // Parse phases from generated plan text
   const parsePhasesFromPlan = (planText: string): any[] => {
     const phases: any[] = []
-    const now = new Date()
+    const now = safeDate(new Date()) || new Date()
     
     // Look for phase patterns like "Phase 1:", "المرحلة 1:", "Week 1-2:", etc.
     const phasePatterns = [
@@ -232,16 +233,23 @@ export function PlanEditor({ planType = "farming" }: PlanEditorProps) {
         const endDate = new Date(now)
         endDate.setDate(endDate.getDate() + endWeek * 7)
         
-        phases.push({
-          name: phaseName.substring(0, 50),
-          nameArabic: phaseName.substring(0, 50),
-          description: phaseName,
-          startDate: startDate.toISOString(),
-          endDate: endDate.toISOString(),
-          status: phaseNum === 1 ? 'in-progress' : 'pending',
-          progress: phaseNum === 1 ? 10 : 0,
-          tasks: []
-        })
+        // Use safeDateToISO to prevent invalid date strings
+        const safeStartDate = safeDateToISO(startDate)
+        const safeEndDate = safeDateToISO(endDate)
+        
+        // Only add phase if dates are valid
+        if (safeStartDate && safeEndDate) {
+          phases.push({
+            name: phaseName.substring(0, 50),
+            nameArabic: phaseName.substring(0, 50),
+            description: phaseName,
+            startDate: safeStartDate,
+            endDate: safeEndDate,
+            status: phaseNum === 1 ? 'in-progress' : 'pending',
+            progress: phaseNum === 1 ? 10 : 0,
+            tasks: []
+          })
+        }
       }
     }
     
@@ -295,16 +303,23 @@ export function PlanEditor({ planType = "farming" }: PlanEditorProps) {
         const endDate = new Date(currentDate)
         endDate.setDate(endDate.getDate() + phase.weeks * 7)
         
-        phases.push({
-          name: phase.name,
-          nameArabic: phase.nameAr,
-          description: phase.name,
-          startDate: startDate.toISOString(),
-          endDate: endDate.toISOString(),
-          status: i === 0 ? 'in-progress' : 'pending',
-          progress: i === 0 ? 10 : 0,
-          tasks: []
-        })
+        // Use safeDateToISO to prevent invalid date strings
+        const safeStartDate = safeDateToISO(startDate)
+        const safeEndDate = safeDateToISO(endDate)
+        
+        // Only add phase if dates are valid
+        if (safeStartDate && safeEndDate) {
+          phases.push({
+            name: phase.name,
+            nameArabic: phase.nameAr,
+            description: phase.name,
+            startDate: safeStartDate,
+            endDate: safeEndDate,
+            status: i === 0 ? 'in-progress' : 'pending',
+            progress: i === 0 ? 10 : 0,
+            tasks: []
+          })
+        }
         
         currentDate = new Date(endDate)
         currentDate.setDate(currentDate.getDate() + 1)
@@ -323,13 +338,23 @@ export function PlanEditor({ planType = "farming" }: PlanEditorProps) {
       // Parse phases from the generated plan
       const phases = parsePhasesFromPlan(generatedPlan)
       
+      // Validate phases have valid dates before saving
+      if (phases.length === 0) {
+        throw new Error(language === 'ar' 
+          ? 'فشل في إنشاء مراحل صالحة للخطة' 
+          : 'Failed to create valid phases for the plan')
+      }
+      
+      const now = new Date()
+      const safeApprovedAt = safeDateToISO(now) || now.toISOString()
+      
       const result = await plansApi.create({
-        title: `${title} - ${new Date().toLocaleDateString(language === 'ar' ? 'ar-EG' : 'en-US')}`,
+        title: `${title} - ${now.toLocaleDateString(language === 'ar' ? 'ar-EG' : 'en-US')}`,
         type: planType,
         content: {
           plan: generatedPlan,
           prompt: userPrompt,
-          approvedAt: new Date().toISOString()
+          approvedAt: safeApprovedAt
         },
         phases: phases
       })

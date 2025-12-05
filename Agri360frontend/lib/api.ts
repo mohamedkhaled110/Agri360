@@ -5,6 +5,33 @@ if (!API_BASE) {
 }
 
 // ============================================================================
+// SAFE DATE HELPER - Prevents "Invalid time value" errors
+// ============================================================================
+/**
+ * Safely parse a date value, returning null for invalid dates
+ * Prevents "Invalid time value" errors when sending to backend
+ */
+export function safeDate(d: any): Date | null {
+  if (d === null || d === undefined || d === "" || d === "null" || d === "undefined") {
+    return null
+  }
+  try {
+    const parsed = d instanceof Date ? d : new Date(d)
+    return isNaN(parsed.getTime()) ? null : parsed
+  } catch {
+    return null
+  }
+}
+
+/**
+ * Safely convert a date to ISO string, returning null for invalid dates
+ */
+export function safeDateToISO(d: any): string | null {
+  const parsed = safeDate(d)
+  return parsed ? parsed.toISOString() : null
+}
+
+// ============================================================================
 // TYPES
 // ============================================================================
 export interface UserPreferences {
