@@ -155,8 +155,46 @@ export interface DashboardData {
 }
 
 // ============================================================================
-// REQUEST HELPER
+// REQUEST HELPER - Production-safe with defensive error handling
 // ============================================================================
+
+/**
+ * Safely parse JSON, returning null on failure
+ */
+function safeJsonParse(text: string): any | null {
+  if (!text || text.trim() === '') return null
+  try {
+    return JSON.parse(text)
+  } catch {
+    return null
+  }
+}
+
+/**
+ * API Error class for better error handling
+ */
+export class ApiError extends Error {
+  status: number
+  statusText: string
+  body: string
+  
+  constructor(status: number, statusText: string, body: string, message?: string) {
+    super(message || `API Error ${status}: ${statusText}`)
+    this.name = 'ApiError'
+    this.status = status
+    this.statusText = statusText
+    this.body = body
+  }
+}
+
+/**
+ * Centralized API request function
+ * - Checks response.ok before parsing
+ * - Verifies Content-Type before JSON parsing
+ * - Falls back to text on non-JSON responses
+ * - Never throws on JSON parse errors
+ * - Handles 401/403/500 gracefully
+ */
 async function request<T = any>(path: string, options: RequestInit = {}): Promise<T> {
   const token = typeof window !== "undefined" ? localStorage.getItem("token") : null
   const headers: Record<string, string> = {
@@ -165,26 +203,87 @@ async function request<T = any>(path: string, options: RequestInit = {}): Promis
   }
   if (token) headers["Authorization"] = `Bearer ${token}`
 
-  const res = await fetch(`${API_BASE}${path}`, {
-    credentials: "include",
-    ...options,
-    headers,
-  })
-
-  if (!res.ok) {
-    const text = await res.text()
-    let errorMessage = text || res.statusText
-    try {
-      const errorJson = JSON.parse(text)
-      errorMessage = errorJson.message || errorJson.error || errorMessage
-    } catch {}
-    console.error(`API Error [${res.status}]: ${path}`, errorMessage)
-    throw new Error(errorMessage)
+  let res: Response
+  
+  try {
+    res = await fetch(`${API_BASE}${path}`, {
+      credentials: "include",
+      ...options,
+      headers,
+    })
+  } catch (networkError: any) {
+    // Network error (no internet, DNS failure, CORS, etc.)
+    console.error(`Network Error [${path}]:`, networkError.message)
+    throw new ApiError(0, 'Network Error', '', networkError.message || 'Failed to connect to server')
   }
 
+  // Get response body as text first (safe operation)
+  let responseText = ''
+  try {
+    responseText = await res.text()
+  } catch {
+    responseText = ''
+  }
+
+  // Check Content-Type header
   const contentType = res.headers.get("content-type") || ""
-  if (contentType.includes("application/json")) return res.json()
-  return res.text() as unknown as T
+  const isJsonResponse = contentType.includes("application/json")
+
+  // Handle non-OK responses
+  if (!res.ok) {
+    let errorMessage = res.statusText || `HTTP ${res.status}`
+    
+    // Try to extract error message from JSON response
+    if (isJsonResponse && responseText) {
+      const errorJson = safeJsonParse(responseText)
+      if (errorJson) {
+        errorMessage = errorJson.message || errorJson.error || errorJson.msg || errorMessage
+      }
+    } else if (responseText && responseText.length < 500) {
+      // Use text response if short enough (not HTML page)
+      errorMessage = responseText
+    }
+    
+    // Handle specific status codes
+    if (res.status === 401) {
+      console.warn(`Auth Error [${path}]: Unauthorized - token may be expired`)
+      // Clear token on 401
+      if (typeof window !== "undefined") {
+        localStorage.removeItem("token")
+      }
+      errorMessage = 'Session expired. Please login again.'
+    } else if (res.status === 403) {
+      console.warn(`Auth Error [${path}]: Forbidden`)
+      errorMessage = 'You do not have permission to access this resource.'
+    } else if (res.status >= 500) {
+      console.error(`Server Error [${res.status}] [${path}]:`, errorMessage)
+      errorMessage = 'Server error. Please try again later.'
+    } else {
+      console.error(`API Error [${res.status}] [${path}]:`, errorMessage)
+    }
+    
+    throw new ApiError(res.status, res.statusText, responseText, errorMessage)
+  }
+
+  // Parse successful response
+  if (isJsonResponse && responseText) {
+    const jsonData = safeJsonParse(responseText)
+    if (jsonData !== null) {
+      return jsonData as T
+    }
+    // JSON parse failed but Content-Type said JSON - log warning
+    console.warn(`Invalid JSON response from [${path}]:`, responseText.substring(0, 200))
+    return {} as T
+  }
+  
+  // Non-JSON response (could be text, HTML, etc.)
+  if (responseText) {
+    // Return as-is for non-JSON
+    return responseText as unknown as T
+  }
+  
+  // Empty response
+  return {} as T
 }
 
 // ============================================================================
@@ -524,8 +623,10 @@ async function geocodeLocation(location: string): Promise<{lat: number, lon: num
   try {
     const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(location)}`
     const res = await fetch(url, { headers: { 'User-Agent': 'Agri360/1.0' } })
-    const data = await res.json()
-    if (data && data.length > 0) {
+    if (!res.ok) return null
+    const text = await res.text()
+    const data = safeJsonParse(text)
+    if (data && Array.isArray(data) && data.length > 0) {
       return { lat: parseFloat(data[0].lat), lon: parseFloat(data[0].lon) }
     }
   } catch (err) {
@@ -572,9 +673,11 @@ export const weather = {
       // Call Open-Meteo API directly
       const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m&daily=weather_code,temperature_2m_max&timezone=auto&forecast_days=5`
       const res = await fetch(url)
-      const data = await res.json()
+      if (!res.ok) throw new Error(`Weather API returned ${res.status}`)
+      const text = await res.text()
+      const data = safeJsonParse(text)
 
-      if (!data.current) throw new Error('No weather data')
+      if (!data || !data.current) throw new Error('No weather data')
 
       // Build forecast from daily data
       const forecast = data.daily?.time?.slice(0, 5).map((date: string, i: number) => ({

@@ -38,7 +38,15 @@ export default function TestAPIPage() {
         throw new Error('NEXT_PUBLIC_API_URL is not configured')
       }
       const res = await fetch(`${API_URL}/test-api`)
-      const data = await res.json()
+      const text = await res.text()
+      let data: any = { raw: text }
+      try {
+        data = JSON.parse(text)
+      } catch { /* non-JSON response */ }
+      
+      if (!res.ok) {
+        throw new Error(data.message || data.error || `HTTP ${res.status}`)
+      }
       addResult({
         name: "✅ Backend Health",
         status: "success",

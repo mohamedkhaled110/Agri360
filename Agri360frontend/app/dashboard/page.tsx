@@ -199,17 +199,24 @@ export default function DashboardPage() {
       if (storedLocation) {
         try {
           const coords = JSON.parse(storedLocation)
-          const data = await weatherApi.getCurrent(undefined, coords)
-          // Get location name
-          try {
-            const geoRes = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${coords.lat}&lon=${coords.lon}`, {
-              headers: { 'User-Agent': 'Agri360/1.0' }
-            })
-            const geoData = await geoRes.json()
-            data.location = geoData.address?.city || geoData.address?.town || geoData.address?.village || geoData.address?.state || 'Your Location'
-          } catch { /* ignore */ }
-          setWeatherData(data)
-          return
+          if (coords && typeof coords.lat === 'number' && typeof coords.lon === 'number') {
+            const data = await weatherApi.getCurrent(undefined, coords)
+            // Get location name
+            try {
+              const geoRes = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${coords.lat}&lon=${coords.lon}`, {
+                headers: { 'User-Agent': 'Agri360/1.0' }
+              })
+              if (geoRes.ok) {
+                const geoText = await geoRes.text()
+                try {
+                  const geoData = JSON.parse(geoText)
+                  data.location = geoData.address?.city || geoData.address?.town || geoData.address?.village || geoData.address?.state || 'Your Location'
+                } catch { /* ignore parse error */ }
+              }
+            } catch { /* ignore network error */ }
+            setWeatherData(data)
+            return
+          }
         } catch {
           // Stored location failed, clear it
           localStorage.removeItem('userLocation')
@@ -234,8 +241,13 @@ export default function DashboardPage() {
           const geoRes = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${coords.lat}&lon=${coords.lon}`, {
             headers: { 'User-Agent': 'Agri360/1.0' }
           })
-          const geoData = await geoRes.json()
-          data.location = geoData.address?.city || geoData.address?.town || geoData.address?.village || geoData.address?.state || 'Your Location'
+          if (geoRes.ok) {
+            const geoText = await geoRes.text()
+            try {
+              const geoData = JSON.parse(geoText)
+              data.location = geoData.address?.city || geoData.address?.town || geoData.address?.village || geoData.address?.state || 'Your Location'
+            } catch { /* ignore parse error */ }
+          }
         } catch { /* ignore reverse geocode errors */ }
         
         setWeatherData(data)
@@ -281,7 +293,11 @@ export default function DashboardPage() {
       }
       const res = await fetch(`${API_URL}/market/prices`)
       if (res.ok) {
-        const data = await res.json()
+        const text = await res.text()
+        let data: any = {}
+        try {
+          data = JSON.parse(text)
+        } catch { /* non-JSON response */ }
         if (data.prices && data.prices.length > 0) {
           // Map to our format
           const mappedPrices = data.prices.map((p: any) => ({
